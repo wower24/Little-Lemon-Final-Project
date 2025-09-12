@@ -1,5 +1,8 @@
 package com.wower.littlelemon
 
+import android.content.Context
+import android.content.SharedPreferences
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -37,9 +41,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wower.littlelemon.ui.theme.Green
 import com.wower.littlelemon.ui.theme.Yellow
+import androidx.core.content.edit
+import androidx.navigation.NavHostController
 
 @Composable
-fun Onboarding(modifier: Modifier = Modifier) {
+fun Onboarding(navController: NavHostController,
+               modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
+    var emailAddress by remember { mutableStateOf("") }
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween,
@@ -80,7 +91,6 @@ fun Onboarding(modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            var firstName by remember { mutableStateOf("") }
             TextField(
                 modifier = Modifier.padding(16.dp)
                     .border(width = 1.dp, color = Green, shape = RoundedCornerShape(10.dp))
@@ -96,7 +106,6 @@ fun Onboarding(modifier: Modifier = Modifier) {
                 placeholder = { Text(text = "Your first name") }
             )
 
-            var lastName by remember { mutableStateOf("") }
             TextField(
                 modifier = Modifier.padding(16.dp)
                     .border(width = 1.dp, color = Green, shape = RoundedCornerShape(10.dp))
@@ -112,7 +121,6 @@ fun Onboarding(modifier: Modifier = Modifier) {
                 placeholder = { Text(text = "Your last name") }
             )
 
-            var emailAddress by remember { mutableStateOf("") }
             TextField(
                 modifier = Modifier.padding(16.dp)
                     .border(width = 1.dp, color = Green, shape = RoundedCornerShape(10.dp))
@@ -138,7 +146,38 @@ fun Onboarding(modifier: Modifier = Modifier) {
                 containerColor = Yellow
             ),
             shape = RoundedCornerShape(10.dp),
-            onClick = {}
+            onClick = {
+                if(!firstName.isBlank() && !lastName.isBlank() && !emailAddress.isBlank()) {
+                    context.getSharedPreferences("LittleLemon", Context.MODE_PRIVATE).edit() {
+                        putBoolean(
+                            "isLoggedIn",
+                            true
+                        )
+                        putString(
+                            "firstName",
+                            firstName
+                        )
+                        putString(
+                            "lastName",
+                            lastName
+                        )
+                        putString(
+                            "emailAddress",
+                            emailAddress
+                        )
+                    }
+                    Toast.makeText(
+                        context, "Registration successful!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    navController.navigate(Home.route)
+                } else {
+                    Toast.makeText(
+                        context, "Registration unsuccessful. Please enter all data.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
         ) {
             Text(
                 text = "Register",
@@ -152,5 +191,6 @@ fun Onboarding(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 fun OnboardingPreview() {
-    Onboarding()
+    val navController = NavHostController(LocalContext.current)
+    Onboarding(navController)
 }
