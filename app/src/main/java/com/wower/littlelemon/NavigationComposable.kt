@@ -18,11 +18,11 @@ fun Navigation(
         }
 
         composable(Home.route) {
-            Home()
+            Home(navController)
         }
 
         composable(Profile.route) {
-            Profile()
+            Profile(navController)
         }
     }
 }
