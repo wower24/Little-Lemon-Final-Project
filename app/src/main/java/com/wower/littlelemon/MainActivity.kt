@@ -16,11 +16,26 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.wower.littlelemon.Home
 import com.wower.littlelemon.ui.theme.LittleLemonTheme
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.serialization.kotlinx.json.json
 
 class MainActivity : ComponentActivity() {
+
+    lateinit var httpClient: HttpClient
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        httpClient = HttpClient(Android) {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
         setContent {
             LittleLemonTheme {
                 val sharedPreferences = getSharedPreferences("LittleLemon", Context.MODE_PRIVATE)
@@ -28,6 +43,13 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    suspend fun getMenu(): MenuNetwork {
+        val response = httpClient.get("https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/menu.json")
+
+        return response.body<MenuNetwork>()
+    }
+
 }
 
 @Composable
