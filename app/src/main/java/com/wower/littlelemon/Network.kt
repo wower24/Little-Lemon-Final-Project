@@ -19,3 +19,12 @@ data class MenuItemNetwork(
     val image: String,
     val category: String
 )
+
+fun MenuItemNetwork.toMenuItemRoom() = MenuItemRoom(
+    id = id,
+    title = title,
+    description = description,
+    price = price,
+    image = image,
+    category = category
+)

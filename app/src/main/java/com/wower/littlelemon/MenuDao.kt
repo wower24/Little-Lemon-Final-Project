@@ -15,7 +15,7 @@ interface MenuDao {
     fun getMenuItemsByCategory(category: String): LiveData<List<MenuItemRoom>>
 
     @Insert
-    fun insertAllMenuItems(vararg menuItems: List<MenuItemNetwork>)
+    fun insertAllMenuItems(menuItems: List<MenuItemRoom>)
 
     @Delete
     fun deleteMenuItem(menuItem: MenuItemRoom)

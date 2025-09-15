@@ -47,7 +47,8 @@ class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             val menu = getMenu()
-            database.menuDao().insertAllMenuItems(menu.menu)
+            val menuRoom = menu.menu.map { it.toMenuItemRoom() }
+            database.menuDao().insertAllMenuItems(menuRoom)
         }
 
         setContent {
