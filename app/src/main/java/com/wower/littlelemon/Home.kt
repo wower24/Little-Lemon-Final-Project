@@ -3,6 +3,7 @@ package com.wower.littlelemon
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,7 +20,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,6 +45,9 @@ import com.wower.littlelemon.ui.theme.Gray
 import com.wower.littlelemon.ui.theme.Green
 import com.wower.littlelemon.ui.theme.LightGreen
 import com.wower.littlelemon.ui.theme.Yellow
+
+//This isn't working, figure out how to have a local global as state
+var menuItemsFiltered = listOf<MenuItemRoom>()
 
 @Composable
 fun Home(
@@ -62,11 +72,16 @@ fun Home(
                     .size(height = 80.dp, width = 300.dp),
                 contentScale = ContentScale.FillWidth
             )
-            RestaurantInformation()
+            RestaurantInformation(menuItems)
         }
 
         MenuCategories(menuItems)
-        MenuItems(menuItems)
+
+        if(menuItemsFiltered.isEmpty()) {
+            MenuItems(menuItems)
+        } else {
+            MenuItems(menuItemsFiltered)
+        }
 
         Button(
             modifier = Modifier
@@ -91,9 +106,10 @@ fun Home(
 }
 
 @Composable
-fun MenuCategories(menuItems: List<MenuItemRoom> = listOf()) {
+fun MenuCategories(
+    menuItems: List<MenuItemRoom> = listOf()
+) {
     val categories = listOf("Starters", "Mains", "Desserts")
-    var menuItemsFiltered = listOf<MenuItemRoom>()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -123,7 +139,11 @@ fun MenuCategories(menuItems: List<MenuItemRoom> = listOf()) {
     }
 
 @Composable
-fun RestaurantInformation() {
+fun RestaurantInformation(
+    menuItems: List<MenuItemRoom> = listOf()
+) {
+    var searchPhrase by remember { mutableStateOf("") }
+
 Column(
     modifier = Modifier
         .fillMaxWidth()
@@ -168,6 +188,28 @@ Column(
             contentScale = ContentScale.FillWidth
         )
     }
+
+    TextField(
+        modifier = Modifier.padding(16.dp)
+            .border(width = 1.dp, color = Color.Transparent, shape = RoundedCornerShape(10.dp))
+            .fillMaxWidth(0.9f),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor =  Color.White,
+            unfocusedContainerColor = Color.White,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        ),
+        value = searchPhrase,
+        onValueChange = { newText: String -> {
+            searchPhrase = newText
+            if(!searchPhrase.isEmpty()) {
+                menuItemsFiltered = menuItems.filter {
+                    it.title.contains(searchPhrase)
+                }
+            }
+        } },
+        placeholder = { Text(text = "Enter search phrase") }
+    )
 }
 }
 
