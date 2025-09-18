@@ -23,6 +23,11 @@ import io.ktor.client.request.get
 import io.ktor.http.ContentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
 
@@ -48,13 +53,19 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             val menu = getMenu()
             val menuRoom = menu.menu.map { it.toMenuItemRoom() }
-            database.menuDao().insertAllMenuItems(menuRoom)
+            withContext(Dispatchers.IO) {
+                database.menuDao().insertAllMenuItems(menuRoom)
+            }
         }
 
         setContent {
             LittleLemonTheme {
                 val sharedPreferences = getSharedPreferences("LittleLemon", Context.MODE_PRIVATE)
-                App(sharedPreferences.getBoolean("isLoggedIn", false))
+                val menuItems by database.menuDao().getAllMenuItems().observeAsState(initial = emptyList())
+                App(
+                    sharedPreferences.getBoolean("isLoggedIn", false),
+                    menuItems
+                )
             }
         }
     }
@@ -78,9 +89,12 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun App(isLoggedIn : Boolean) {
+fun App(
+    isLoggedIn : Boolean,
+    menuItems: List<MenuItemRoom> = listOf()
+) {
     val navController: NavHostController = rememberNavController()
-    Navigation(navController, false)
+    Navigation(navController, isLoggedIn, menuItems)
 }
 
 @Preview(showBackground = true)

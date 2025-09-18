@@ -8,7 +8,8 @@ import androidx.navigation.compose.composable
 @Composable
 fun Navigation(
     navController: NavHostController,
-    isLoggedIn: Boolean
+    isLoggedIn: Boolean,
+    menuItems: List<MenuItemRoom> = listOf()
 ) {
     //TODO: startDestination based on isLoggedIn shared preference
     val startDestination = if (isLoggedIn) Home.route else Onboarding.route
@@ -18,7 +19,10 @@ fun Navigation(
         }
 
         composable(Home.route) {
-            Home(navController)
+            Home(
+                navController,
+                menuItems
+            )
         }
 
         composable(Profile.route) {
