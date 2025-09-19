@@ -11,7 +11,6 @@ fun Navigation(
     isLoggedIn: Boolean,
     menuItems: List<MenuItemRoom> = listOf()
 ) {
-    //TODO: startDestination based on isLoggedIn shared preference
     val startDestination = if (isLoggedIn) Home.route else Onboarding.route
     val navHost = NavHost(navController = navController, startDestination = startDestination) {
         composable(Onboarding.route) {

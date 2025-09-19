@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,14 +47,18 @@ import com.wower.littlelemon.ui.theme.Green
 import com.wower.littlelemon.ui.theme.LightGreen
 import com.wower.littlelemon.ui.theme.Yellow
 
-//This isn't working, figure out how to have a local global as state
-var menuItemsFiltered = listOf<MenuItemRoom>()
-
 @Composable
 fun Home(
     navController: NavHostController,
     menuItems: List<MenuItemRoom> = listOf()
     ) {
+    var filteredMenuItems by remember { mutableStateOf(menuItems) }
+    var searchPhrase by remember { mutableStateOf("") }
+
+    LaunchedEffect(menuItems) {
+        filteredMenuItems = menuItems
+    }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween,
@@ -72,16 +77,29 @@ fun Home(
                     .size(height = 80.dp, width = 300.dp),
                 contentScale = ContentScale.FillWidth
             )
-            RestaurantInformation(menuItems)
+            RestaurantInformation(
+                menuItems = menuItems,
+                onSearchPhraseChanged = {
+                    searchPhrase = it
+                    if(!searchPhrase.isEmpty()) {
+                        filteredMenuItems = menuItems.filter {
+                            it.title.contains(searchPhrase)
+                        }
+                    }
+                }
+            )
         }
 
-        MenuCategories(menuItems)
+        MenuCategories(
+            menuItems = menuItems,
+            onCategorySelected = {  category :String ->
+                filteredMenuItems = menuItems.filter { it ->
+                    it.category.equals(category, ignoreCase = true)
+                }
+            }
+        )
 
-        if(menuItemsFiltered.isEmpty()) {
-            MenuItems(menuItems)
-        } else {
-            MenuItems(menuItemsFiltered)
-        }
+        MenuItems(filteredMenuItems)
 
         Button(
             modifier = Modifier
@@ -107,7 +125,8 @@ fun Home(
 
 @Composable
 fun MenuCategories(
-    menuItems: List<MenuItemRoom> = listOf()
+    menuItems: List<MenuItemRoom> = listOf(),
+    onCategorySelected: (String) -> Unit = {}
 ) {
     val categories = listOf("Starters", "Mains", "Desserts")
     Row(
@@ -124,9 +143,7 @@ fun MenuCategories(
                     containerColor = LightGreen
                 ),
                 onClick = {
-                    menuItemsFiltered = menuItems.filter {
-                        it.category.equals(category, ignoreCase = true)
-                    }
+                    onCategorySelected(category)
                 }
             ) {
                 Text(
@@ -140,7 +157,8 @@ fun MenuCategories(
 
 @Composable
 fun RestaurantInformation(
-    menuItems: List<MenuItemRoom> = listOf()
+    menuItems: List<MenuItemRoom> = listOf(),
+    onSearchPhraseChanged: (String) -> Unit = {}
 ) {
     var searchPhrase by remember { mutableStateOf("") }
 
@@ -200,14 +218,9 @@ Column(
             unfocusedIndicatorColor = Color.Transparent
         ),
         value = searchPhrase,
-        onValueChange = { newText: String -> {
-            searchPhrase = newText
-            if(!searchPhrase.isEmpty()) {
-                menuItemsFiltered = menuItems.filter {
-                    it.title.contains(searchPhrase)
-                }
-            }
-        } },
+        onValueChange = {
+            onSearchPhraseChanged(it)
+        },
         placeholder = { Text(text = "Enter search phrase") }
     )
 }
