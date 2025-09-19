@@ -78,12 +78,12 @@ fun Home(
                 contentScale = ContentScale.FillWidth
             )
             RestaurantInformation(
-                menuItems = menuItems,
-                onSearchPhraseChanged = {
-                    searchPhrase = it
+                searchPhrase = searchPhrase,
+                onSearchPhraseChanged = { newText ->
+                    searchPhrase = newText
                     if(!searchPhrase.isEmpty()) {
                         filteredMenuItems = menuItems.filter {
-                            it.title.contains(searchPhrase)
+                            it.title.contains(searchPhrase, ignoreCase = true)
                         }
                     }
                 }
@@ -93,8 +93,12 @@ fun Home(
         MenuCategories(
             menuItems = menuItems,
             onCategorySelected = {  category :String ->
-                filteredMenuItems = menuItems.filter { it ->
-                    it.category.equals(category, ignoreCase = true)
+                filteredMenuItems = if(category.equals("All")) {
+                    menuItems
+                } else {
+                    menuItems.filter { it ->
+                        it.category.equals(category, ignoreCase = true)
+                    }
                 }
             }
         )
@@ -103,10 +107,10 @@ fun Home(
 
         Button(
             modifier = Modifier
-                .padding(32.dp)
+                .padding(18.dp)
                 .fillMaxWidth(0.8f)
-                .height(80.dp)
-                .padding(bottom = 16.dp),
+                .height(60.dp)
+                .padding(bottom = 8.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Yellow
             ),
@@ -117,7 +121,7 @@ fun Home(
             Text(
                 text = "Profile",
                 color = Color.Black,
-                fontSize = 24.sp
+                fontSize = 20.sp
             )
         }
     }
@@ -128,7 +132,7 @@ fun MenuCategories(
     menuItems: List<MenuItemRoom> = listOf(),
     onCategorySelected: (String) -> Unit = {}
 ) {
-    val categories = listOf("Starters", "Mains", "Desserts")
+    val categories = listOf("All", "Starters", "Mains", "Desserts")
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -138,7 +142,7 @@ fun MenuCategories(
     ) {
         categories.map { category ->
             Button(
-                modifier = Modifier.padding(8.dp),
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = LightGreen
                 ),
@@ -157,11 +161,9 @@ fun MenuCategories(
 
 @Composable
 fun RestaurantInformation(
-    menuItems: List<MenuItemRoom> = listOf(),
+    searchPhrase: String,
     onSearchPhraseChanged: (String) -> Unit = {}
 ) {
-    var searchPhrase by remember { mutableStateOf("") }
-
 Column(
     modifier = Modifier
         .fillMaxWidth()
@@ -208,9 +210,9 @@ Column(
     }
 
     TextField(
-        modifier = Modifier.padding(16.dp)
-            .border(width = 1.dp, color = Color.Transparent, shape = RoundedCornerShape(10.dp))
-            .fillMaxWidth(0.9f),
+        modifier = Modifier.padding(vertical = 16.dp, horizontal = 8.dp)
+            .fillMaxWidth()
+            .border(width = 1.dp, color = Color.Transparent, shape = RoundedCornerShape(20.dp)),
         colors = TextFieldDefaults.colors(
             focusedContainerColor =  Color.White,
             unfocusedContainerColor = Color.White,
